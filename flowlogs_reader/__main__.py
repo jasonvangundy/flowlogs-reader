@@ -56,6 +56,7 @@ actions['findip'] = action_findip
 def get_reader(args):
     kwargs = {
         'region_name': args.region,
+        'profile_name': args.profile
     }
     time_format = args.time_format
 
@@ -77,6 +78,8 @@ def main(argv=None):
                         help='action to take on log records')
     parser.add_argument('--region', type=str, default='us-east-1',
                         help='AWS region the Log Group is in')
+    parser.add_argument('--profile', type=str, default='default',
+                        help='credential profile to use')
     parser.add_argument('--start-time', '-s', type=str,
                         help='filter stream records at or after this time')
     parser.add_argument('--end-time', '-e', type=str,

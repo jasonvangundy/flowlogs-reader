@@ -21,7 +21,7 @@ import boto3
 from botocore.exceptions import NoRegionError
 
 
-DEFAULT_REGION_NAME = 'us-east-1'
+DEFAULT_REGION_NAME = 'us-west-2'
 
 ACCEPT = 'ACCEPT'
 REJECT = 'REJECT'
@@ -132,22 +132,32 @@ class FlowLogsReader(object):
         region_name=None,
         start_time=None,
         end_time=None,
-        boto_client_kwargs=None
+        boto_client_kwargs=None,
+        profile_name=None
+
     ):
         boto_client_kwargs = boto_client_kwargs or {}
+        boto_profile_name = profile_name or 'default'
+
+        print('log group name: %s' % log_group_name)
+        print('region: %s' % region_name)
+        print('using aws profile: %s' % boto_profile_name)
+        print('boto kwargs: %s' % boto_client_kwargs)
 
         # If a specific region is requested, use it.
         # If not, try to use the environment's configuration (i.e. the
         # AWS_DEFAULT_REGION variable of ~/.aws/config file).
         # If that doesn't work, use a default region.
         if region_name is not None:
-            boto_client_kwargs['region_name'] = region_name
+            boto3.setup_default_session(profile_name=boto_profile_name, region_name=region_name)
+            session = boto3._get_default_session()
+            print('default session set up with %s...' % session.profile_name)
             self.logs_client = boto3.client('logs', **boto_client_kwargs)
         else:
             try:
                 self.logs_client = boto3.client('logs', **boto_client_kwargs)
             except NoRegionError:
-                boto_client_kwargs['region_name'] = DEFAULT_REGION_NAME
+                boto3.setup_default_session(profile_name=boto_profile_name, region_name=DEFAULT_REGION_NAME)
                 self.logs_client = boto3.client('logs', **boto_client_kwargs)
 
         self.log_group_name = log_group_name
